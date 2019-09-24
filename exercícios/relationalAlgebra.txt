@@ -1,0 +1,74 @@
+Query 1. Retrieve the name and address of all employees who
+work for the ‘Research’ departmen.
+
+RESEARCH_DEPT <= sigma dname='Research' (DEPARTMENT)
+RESEARCH_EMPS <= (RESEARCH_DEPT join Dnumber=Dno EMPLOYEE)
+RESULT <= pi fname, lname, address (RESEARCH_EMPS)
+
+
+Query 2. For every project located in ‘Stafford’, list the
+project number, the controlling department number, and the
+department manager’s last name, address, and birth date. 
+
+STAFFORD_PROJ <= sigma plocation='Stafford' (PROJECT)
+STAFFORD_PROJ_DEPT <= (DEPARTMENT join dnumber=dnum STAFFORD_PROJ)
+PROJ_DEPS_MGRS <= (STAFFORD_PROJ_DEPT join mrgssn=ssn EMPLOYEE)
+RESULT <= pi pnumber, dnumber, lname, address, bdate (PROJ_DEPS_MGRS)
+
+
+Query 3. Find the names of employees who work on all the
+projects controlled by department number 5
+
+DEPT5_PROJECTS <= rho pno (pi pnumber (sigma dnum=5 (PROJECT)))
+EMP_PROJS <= rho ssn, pno (pi essn, pno (WORKS_ON))
+RESULT_EMP_SSNS <= EMP_PROJS div DEPT5_PROJECTS
+RESULT <= pi fname, lname (EMP_PROJS join EMPLOYEE)
+
+
+Query 4. Make a list of project numbers for projects that
+involve an employee whose last name is ‘Smith’, either as a
+worker or as a manager of the department that controls the
+project.
+
+EMP_SMITH <= pi ssn(sigma lname='Smith' (EMPLOYEE))
+DEPTS <= rho dnum, ssn (pi dnumber, mgr_ssn (DEPARTMENT))
+DEPTS_MGR_SMITH <= DEPTS div EMP_SMITH
+- PROJS_DEP_MGR_SMITH <= rho pno (pi pnumber (PROJECT div DEPTS_MGR_SMITH))
+PROJS <= rho ssn, pno (pi essn, pno (WORKS_ON))
+- PROJS_SMITH <= PROJS div EMP_SMITH
+RESULT <= PROJS_SMITH U PROJS_DEP_MGR_SMITH
+
+-- Using joins:
+EMP_SMITH <= pi ssn(sigma lname='Smith' (EMPLOYEE))
+SMITH_PROJS <= pi pno (WORKS_ON join essn=ssn EMP_SMITH)
+DEPTS <= rho dnum, ssn (pi dnumber, mgr_ssn (DEPARTMENT))
+DEPTS_MGR_SMITH <= rho dnum (pi dnumber (DEPTS * EMP_SMITH))
+PROJS_MGR_SMITH <= rho pno (pi pnumber (PROJECT * DEPTS_MGR_SMITH))
+RESULT <= SMITH_PROJS U PROJS_MGR_SMITH
+
+
+Query 5. List the names of all employees with two or more
+dependents.
+
+DEPEN <= pi essn, dependent_name (DEPENDENT)
+QTD_DEPENDENT <= essn F COUNT dependent_name (depen)
+EMP_MORE_THAN_2_DEPENDENTS <= sigma count_dependent_name>2 (QTD_DEPENDENT)
+RESULT <= pi fname (EMP_MORE_THAN_2_DEPENDENTS join essn=ssn EMPLOYEE)
+
+
+Query 6. Retrieve the names of employees who have no dependents.
+
+SSN_WITH_DEPENDENT(ssn) <= pi essn DEPENDENT
+EMP_WITH_DEPENDENT <= EMPLOYEE * SSN_WITH_DEPENDENT
+EMP_WITHOUT_DEPENDENT <= EMPLOYEE - EMP_WITH_DEPENDENT
+RESULT <= pi fname (EMP_WITHOUT_DEPENDENT)
+
+
+Query 7. List the names of managers who have at least one dependent.
+
+MGR_SSN (ssn) <= pi mgr_ssn (DEPARTMENT)
+SSN_HAVE_DEPENDENT (ssn) <= pi essn (DEPENDENT)
+MGR_HAVE_DEPENDENT <= MGR_SSN intersec SSN_HAVE_DEPENDENT
+RESULT <= pi fname (MGR_HAVE_DEPENDENT * EMPLOYEE)
+
+
