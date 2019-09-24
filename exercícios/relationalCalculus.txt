@@ -1,0 +1,136 @@
+Query 1. List the name and address of all employees who work
+for the ‘Research’ department.
+
+{e.fname, e.address | EMPLOYEE(e) AND
+                      ∃(d)(DEPARTMENT(d) AND 
+d.dname='Research' AND e.dno=d.dnumber)}
+
+
+Query 2. For every project located in ‘Stafford’, list the
+project number, the controlling department number, and the
+department manager’s last name, birth date, and address.
+
+{p.pnumber, p.dnum, e.lane, e.bdate, e.address | PROJECJ(p) AND
+EMPLOYEE(e) AND p.plocation=‘Stafford’ AND 
+∃(d)(p.dnum=d.dnumber AND p.mgr_ssn=e.ssn)}
+
+
+Query 3'. List the name of each employee who works on some
+project controlled by department number 5. This is a variation
+of Q3 in which all is changed to some. In this case we need
+two join conditions and two existential quantifiers.
+
+{e.fname | EMPLOYEE(e) AND 
+∃(w)∃(p)(WORKS_ON(w) AND PROJECT(p) AND
+w.essn=e.ssn AND w.pno=p.pnumber AND p.dun=5)}
+
+
+Query 4. Make a list of project numbers for projects that
+involve an employee whose last name is ‘Smith’, either as a
+worker or as manager of the controlling department for the
+project.
+
+{p.pnumber | PROJECT(p) AND
+((∃e)(∃w)(EMPLOYEE(e) AND WORKS_ON(w) AND
+e.ssn=w.essn AND w.pno=p.pnumber AND
+e.lname=‘Smith’)) OR 
+((∃e)(∃d)(EMPLOYEE(e) AND DEPARTMENT(d) AND
+d.dnumber=p.dnum AND d.mgr_ssn=e.ssn AND e.lname=‘Smith’))} 
+
+
+Query 3. List the names of employees who work on all the
+projects controlled by department number 5. 
+
+{e.fname | EMPLOYEE(e) AND
+((∀p)(¬PROJECT(p) OR ¬(p.dno=5) OR (∃w)(WORKS_ON(w) AND
+p.pnumber=w.pno AND e.ssn=w.essn))))}
+
+
+Query 6. List the names of employees who have no dependents.
+
+{e.fname | EMPLOYEE(e) AND
+(¬∃d)(DEPEDENT(d) AND d.essn=e.ssn)}
+
+
+Query 7. List the names of managers who have at least one dependent.
+
+{e.fname | EMPLOYEE(e) AND
+(∃d)(∃de)(DEPARTMENT(d) AND DEPEDENT(de) AND
+g.mgr_ssn=e.ssn AND de.essn=e.ssn)}
+
+
+16 - 
+a. Retrieve the names of all employees in department 5 who
+work more than 10 hours per week on the ProductX project.
+
+{e.fname | EMPLOYEE(e) AND e.dno=5 AND
+(∃w)(∃p)(WORKS_ON(w) AND PROJECT(p) AND
+w.pno=p.pnumber AND w.essn=e.ssn AND 
+w.hours>10 AND p.pname='ProductX')}
+
+
+b. List the names of all employees who have a dependent with
+the same first name as themselves.
+
+{e.fname | EMPLOYEE(e) AND (∃d)(DEPENDENT(d) AND
+e.ssn=d.essn AND d.dependent_name=e.fname)}
+
+
+c. Find the names of all employees who are directly supervised
+by ‘Franklin Wong’.
+
+{e.fname | EMPLOYEE(e) AND (∃s)(EMPLOYEE(s) AND
+e.super_ssn=s.ssn AND s.fname='Franklin' AND s.lname='Wong'))}
+
+
+d. For each project, list the project name
+and the total hours per week (by all employees) spent on that
+project.
+
+Impossível pois cálculo relacional não possui funções de 
+agregação (COUNT) como na álgebra relacional.
+
+
+e. Retrieve the names of all employees who work on every
+project.
+
+{e.fname | EMPLOYEE(e) AND
+(∀p)((¬PROJECT(p)) OR ((∃w)(WORKS_ON(w) AND
+w.essn=w.ssn AND p.pnumber=w.pno))}
+
+
+f. Retrieve the names of all employees who do not work on any
+project.
+
+{e.fname | EMPLOYEE(e) AND
+(¬∃w)(WORKS_ON(w) AND w.essn=e.ssn)}
+
+
+g. For each department, retrieve the department name and the
+average salary of all employees working in that department.
+
+Impossível (precisa do AVG)
+
+
+h. Retrieve the average salary of all female employees
+
+Impossível (precisa do AVG)
+
+
+i. Find the names and addresses of all employees who work on
+at least one project located in Houston but whose department
+has no location in Houston.
+
+(e.fname, e.address | EMPLOYEE(e) AND
+(∃w)(∃p)(WORKS_ON(w) AND PROJECT(p) AND
+w.pno=p.pnumber AND w.essn=e.ssn AND p.plocation='Houston' AND
+(¬∃l)(DEPT_LOCATIONS(l) AND
+e.dno=l.dnumber AND l.dlocation='Houston'))))
+
+
+j. List the last names of all department managers who have no
+dependents.
+
+{e.lname | EMPLOYEE(e) AND 
+(∃d)(DEPARTMENT(d) AND d.mgr_ssn=e.ssn AND
+(¬∃de)(DEPENDENT(de) de.essn=e.ssn)))}
